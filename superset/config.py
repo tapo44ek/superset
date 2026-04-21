@@ -2598,6 +2598,14 @@ ENV_VAR_KEYS = {
     "SUPERSET__SQLALCHEMY_EXAMPLES_URI",
 }
 
+# Enable extensions feature
+FEATURE_FLAGS = {
+    "ENABLE_EXTENSIONS": True,
+}
+
+# Set the directory where extensions are stored
+EXTENSIONS_PATH = "test-extension/"
+
 for env_var in ENV_VAR_KEYS:
     if env_var in os.environ:
         config_var = env_var.replace("SUPERSET__", "")

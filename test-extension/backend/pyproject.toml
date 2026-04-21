@@ -1,0 +1,11 @@
+[project]
+name = "my_org-test_extension"
+version = "0.1.0"
+license = "Apache-2.0"
+
+[tool.apache_superset_extensions.build]
+# Files to include in the extension build/bundle
+include = [
+    "src/my_org/test_extension/**/*.py",
+]
+exclude = []

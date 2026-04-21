@@ -16,7 +16,7 @@
 #
 
 # Python version installed; we need 3.10-3.11
-PYTHON=`command -v python3.11 || command -v python3.10`
+PYTHON=`command -v python3.12 || command -v python3.11 || command -v python3.10`
 
 .PHONY: install superset venv pre-commit up down logs ps nuke ports open
 
@@ -70,8 +70,8 @@ update-js:
 
 venv:
 	# Create a virtual environment and activate it (recommended)
-	if ! [ -x "${PYTHON}" ]; then echo "You need Python 3.10 or 3.11 installed"; exit 1; fi
-	test -d venv || ${PYTHON} -m venv venv # setup a python3 virtualenv
+	#if ! [ -x "${PYTHON}" ]; then echo "You need Python 3.10 or 3.11 installed"; exit 1; fi
+	test -d venv || python3.12 -m venv venv # setup a python3 virtualenv
 	. venv/bin/activate
 
 activate:
