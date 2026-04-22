@@ -18,8 +18,23 @@
  */
 import { css, styled } from '@apache-superset/core/theme';
 
-export default styled.div`
-  ${({ theme }) => css`
+interface StylesProps {
+  $headerFontSize?: number | null;
+  $headerTextAlign?: 'left' | 'center' | 'right';
+  $cellFontSize?: number | null;
+  $cellVerticalAlign?: 'top' | 'middle' | 'bottom';
+  $stripedRows?: boolean;
+}
+
+export default styled.div<StylesProps>`
+  ${({
+    theme,
+    $headerFontSize,
+    $headerTextAlign,
+    $cellFontSize,
+    $cellVerticalAlign,
+    $stripedRows,
+  }) => css`
     /* Base table styles */
     table {
       width: 100%;
@@ -34,7 +49,8 @@ export default styled.div`
     td {
       min-width: 4.3em;
       padding: 0.75rem;
-      vertical-align: top;
+      vertical-align: ${$cellVerticalAlign || 'top'};
+      ${$cellFontSize ? `font-size: ${$cellFontSize}px;` : ''}
     }
 
     /* Header styling */
@@ -42,10 +58,11 @@ export default styled.div`
       padding-right: 0;
       position: relative;
       background-color: ${theme.colorBgBase};
-      text-align: left;
+      text-align: ${$headerTextAlign || 'left'};
       border-bottom: 2px solid ${theme.colorSplit};
       color: ${theme.colorText};
       vertical-align: bottom;
+      ${$headerFontSize ? `font-size: ${$headerFontSize}px;` : ''}
     }
 
     /* Icons in header */
@@ -95,7 +112,7 @@ export default styled.div`
 
     /* Bootstrap-like striped table styles */
     table.table-striped tbody tr:nth-of-type(odd) {
-      background-color: ${theme.colorBgLayout};
+      background-color: ${$stripedRows ? theme.colorBgLayout : 'transparent'};
     }
 
     /* Controls and metrics */
@@ -137,12 +154,26 @@ export default styled.div`
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+      max-width: 100%;
     }
 
     .dt-truncate-cell:hover {
       overflow: visible;
       white-space: normal;
       height: auto;
+    }
+
+    .dt-wrap-cell {
+      white-space: normal;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+
+    .dt-clip-cell {
+      overflow: hidden;
+      text-overflow: clip;
+      white-space: nowrap;
+      max-width: 100%;
     }
 
     /* Pagination styling */

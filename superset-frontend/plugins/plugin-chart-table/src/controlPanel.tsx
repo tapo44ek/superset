@@ -670,6 +670,94 @@ const config: ControlPanelConfig = {
         ],
         [
           {
+            name: 'header_font_size',
+            config: {
+              type: 'SelectControl',
+              freeForm: true,
+              label: t('Header font size'),
+              renderTrigger: true,
+              default: 14,
+              choices: [10, 12, 14, 16, 18, 20, 24].map(size => [size, `${size}px`]),
+              description: t('Font size for table header cells in pixels'),
+            },
+          },
+          {
+            name: 'header_text_align',
+            config: {
+              type: 'SelectControl',
+              label: t('Header text align'),
+              renderTrigger: true,
+              default: 'left',
+              clearable: false,
+              choices: [
+                ['left', t('Left')],
+                ['center', t('Center')],
+                ['right', t('Right')],
+              ],
+              description: t('Horizontal alignment for table header content'),
+            },
+          },
+        ],
+        [
+          {
+            name: 'cell_font_size',
+            config: {
+              type: 'SelectControl',
+              freeForm: true,
+              label: t('Cell font size'),
+              renderTrigger: true,
+              default: 14,
+              choices: [10, 12, 14, 16, 18, 20, 24].map(size => [size, `${size}px`]),
+              description: t('Font size for table body cells in pixels'),
+            },
+          },
+          {
+            name: 'cell_vertical_align',
+            config: {
+              type: 'SelectControl',
+              label: t('Cell vertical align'),
+              renderTrigger: true,
+              default: 'top',
+              clearable: false,
+              choices: [
+                ['top', t('Top')],
+                ['middle', t('Middle')],
+                ['bottom', t('Bottom')],
+              ],
+              description: t('Vertical alignment for table cell content'),
+            },
+          },
+        ],
+        [
+          {
+            name: 'cell_text_overflow_mode',
+            config: {
+              type: 'SelectControl',
+              label: t('Cell text overflow'),
+              renderTrigger: true,
+              default: 'truncate',
+              clearable: false,
+              choices: [
+                ['truncate', t('Truncate with ellipsis')],
+                ['wrap', t('Wrap text')],
+                ['clip', t('Clip text')],
+              ],
+              description: t('How long cell values should be displayed'),
+            },
+          },
+          {
+            name: 'striped_rows',
+            config: {
+              type: 'CheckboxControl',
+              label: t('Striped rows'),
+              renderTrigger: true,
+              default: true,
+              description: t('Whether to apply alternating row background colors'),
+            },
+          },
+        ],
+        [
+          {
             name: 'align_pn',
             config: {
               type: 'CheckboxControl',

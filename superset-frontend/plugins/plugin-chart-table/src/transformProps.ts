@@ -53,6 +53,7 @@ import {
   TableChartProps,
   TableChartTransformedProps,
   TableColumnConfig,
+  TableTextOverflowMode,
 } from './types';
 
 const { PERCENT_3_POINT } = NumberFormats;
@@ -748,6 +749,19 @@ const transformProps = (
   });
 
   const startDateOffset = chartProps.rawFormData?.start_date_offset;
+  const headerFontSize = chartProps.rawFormData?.header_font_size;
+  const headerTextAlign = chartProps.rawFormData?.header_text_align;
+  const cellFontSize = chartProps.rawFormData?.cell_font_size;
+  const cellVerticalAlign = chartProps.rawFormData?.cell_vertical_align;
+  const cellTextOverflowMode =
+    chartProps.rawFormData?.cell_text_overflow_mode;
+  const stripedRows = chartProps.rawFormData?.striped_rows ?? true;
+  const normalizedTextOverflowMode: TableTextOverflowMode =
+    cellTextOverflowMode === 'truncate' ||
+    cellTextOverflowMode === 'clip' ||
+    cellTextOverflowMode === 'wrap'
+      ? cellTextOverflowMode
+      : 'truncate';
   return {
     height,
     width,
@@ -783,6 +797,12 @@ const transformProps = (
     timeGrain,
     allowRearrangeColumns,
     allowRenderHtml,
+    headerFontSize,
+    headerTextAlign,
+    cellFontSize,
+    cellVerticalAlign,
+    cellTextOverflowMode: normalizedTextOverflowMode,
+    stripedRows,
     onContextMenu,
     isUsingTimeComparison,
     basicColorFormatters,

@@ -84,6 +84,7 @@ import {
   SearchOption,
   SortByItem,
   TableChartTransformedProps,
+  TableTextOverflowMode,
 } from './types';
 import DataTable, {
   DataTableProps,
@@ -97,6 +98,7 @@ import { PAGE_SIZE_OPTIONS, SERVER_PAGE_SIZE_OPTIONS } from './consts';
 import { updateTableOwnState } from './DataTable/utils/externalAPIs';
 import getScrollBarSize from './DataTable/utils/getScrollBarSize';
 import DateWithFormatter from './utils/DateWithFormatter';
+
 
 type ValueRange = [number, number];
 
@@ -307,6 +309,16 @@ function SelectPageSize({
 const getNoResultsMessage = (filter: string) =>
   filter ? t('No matching records found') : t('No records found');
 
+function getOverflowCellClassName(mode?: TableTextOverflowMode | null): string {
+  if (mode === 'wrap') {
+    return 'dt-wrap-cell';
+  }
+  if (mode === 'clip') {
+    return 'dt-clip-cell';
+  }
+  return 'dt-truncate-cell';
+}
+
 export default function TableChart<D extends DataRecord = DataRecord>(
   props: TableChartTransformedProps<D> & {
     sticky?: DataTableProps<D>['sticky'];
@@ -335,6 +347,12 @@ export default function TableChart<D extends DataRecord = DataRecord>(
     columnColorFormatters,
     allowRearrangeColumns = false,
     allowRenderHtml = true,
+    headerFontSize,
+    headerTextAlign,
+    cellFontSize,
+    cellVerticalAlign,
+    cellTextOverflowMode = 'truncate',
+    stripedRows = true,
     onContextMenu,
     emitCrossFilters,
     isUsingTimeComparison,
@@ -378,6 +396,9 @@ export default function TableChart<D extends DataRecord = DataRecord>(
   // recalculated totals to display when the search filter is applied (client-side pagination)
   const [displayedTotals, setDisplayedTotals] = useState<D | undefined>(totals);
   const theme = useTheme();
+  const resolvedHeaderTextAlign = headerTextAlign ?? 'left';
+  const resolvedCellVerticalAlign = cellVerticalAlign ?? 'top';
+  const overflowCellClassName = getOverflowCellClassName(cellTextOverflowMode);
 
   useEffect(() => {
     setDisplayedTotals(totals);
@@ -1104,10 +1125,15 @@ export default function TableChart<D extends DataRecord = DataRecord>(
                 ? 'dt-is-null'
                 : '',
               isActiveFilterValue(key, value) ? ' dt-is-active-filter' : '',
+              overflowCellClassName,
             ].join(' '),
-            style: resolvedTextColor
-              ? ({ color: resolvedTextColor } as CSSProperties)
-              : undefined,
+            style: {
+              ...(resolvedTextColor
+                ? ({ color: resolvedTextColor } as CSSProperties)
+                : {}),
+              verticalAlign: resolvedCellVerticalAlign,
+              ...(cellFontSize ? { fontSize: `${cellFontSize}px` } : {}),
+            },
             tabIndex: 0,
           };
           if (html) {
@@ -1115,7 +1141,7 @@ export default function TableChart<D extends DataRecord = DataRecord>(
               return (
                 <StyledCell {...cellProps}>
                   <div
-                    className="dt-truncate-cell"
+                    className={overflowCellClassName}
                     style={columnWidth ? { width: columnWidth } : undefined}
                     // Safe: HTML is sanitized via formatColumnValue
                     // eslint-disable-next-line react/no-danger
@@ -1147,7 +1173,7 @@ export default function TableChart<D extends DataRecord = DataRecord>(
               )}
               {truncateLongCells ? (
                 <div
-                  className="dt-truncate-cell"
+                  className={overflowCellClassName}
                   style={columnWidth ? { width: columnWidth } : undefined}
                 >
                   {arrow && <span css={arrowStyles}>{arrow}</span>}
@@ -1203,9 +1229,17 @@ export default function TableChart<D extends DataRecord = DataRecord>(
             ) : null}
             <div
               data-column-name={col.id}
+              className="dt-header-content"
               css={{
                 display: 'inline-flex',
                 alignItems: 'flex-end',
+                justifyContent:
+                  resolvedHeaderTextAlign === 'center'
+                    ? 'center'
+                    : resolvedHeaderTextAlign === 'right'
+                      ? 'flex-end'
+                      : 'flex-start',
+                width: '100%',
               }}
             >
               <span data-column-name={col.id}>{displayLabel}</span>
@@ -1474,12 +1508,20 @@ export default function TableChart<D extends DataRecord = DataRecord>(
   ]);
 
   return (
-    <Styles>
+    <Styles
+      $headerFontSize={headerFontSize}
+      $headerTextAlign={headerTextAlign ?? undefined}
+      $cellFontSize={cellFontSize}
+      $cellVerticalAlign={cellVerticalAlign ?? undefined}
+      $stripedRows={stripedRows}
+    >
       <DataTable<D>
         columns={columns}
         data={data}
         rowCount={rowCount}
-        tableClassName="table table-striped table-condensed"
+        tableClassName={cx('table table-condensed', {
+          'table-striped': stripedRows,
+        })}
         pageSize={pageSize}
         serverPaginationData={serverPaginationData}
         pageSizeOptions={pageSizeOptions}

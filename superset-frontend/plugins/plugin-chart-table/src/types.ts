@@ -47,6 +47,8 @@ export type {
 // Types only re-exported, not used locally - direct re-export
 export type { SearchOption, SortByItem } from '@superset-ui/chart-controls';
 
+export type TableTextOverflowMode = 'wrap' | 'truncate' | 'clip';
+
 export interface TableChartData {
   records: DataRecord[];
   columns: string[];
@@ -70,6 +72,12 @@ export type TableChartFormData = QueryFormData & {
   time_grain_sqla?: TimeGranularity;
   column_config?: Record<string, TableColumnConfig>;
   allow_rearrange_columns?: boolean;
+  header_font_size?: number | null;
+  header_text_align?: 'left' | 'center' | 'right' | null;
+  cell_font_size?: number | null;
+  cell_vertical_align?: 'top' | 'middle' | 'bottom' | null;
+  cell_text_overflow_mode?: TableTextOverflowMode | null;
+  striped_rows?: boolean;
 };
 
 export interface TableChartProps extends ChartProps {
@@ -110,6 +118,12 @@ export interface TableChartTransformedProps<D extends DataRecord = DataRecord> {
   columnColorFormatters?: ColorFormatters;
   allowRearrangeColumns?: boolean;
   allowRenderHtml?: boolean;
+  headerFontSize?: number | null;
+  headerTextAlign?: 'left' | 'center' | 'right' | null;
+  cellFontSize?: number | null;
+  cellVerticalAlign?: 'top' | 'middle' | 'bottom' | null;
+  cellTextOverflowMode?: TableTextOverflowMode | null;
+  stripedRows?: boolean;
   onContextMenu?: (
     clientX: number,
     clientY: number,
