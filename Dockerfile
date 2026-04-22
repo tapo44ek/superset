@@ -29,56 +29,48 @@ ARG BUILD_TRANSLATIONS="false"
 ######################################################################
 # superset-node-ci used as a base for building frontend assets and CI
 ######################################################################
-FROM --platform=${BUILDPLATFORM} node:20-trixie-slim AS superset-node-ci
+FROM --platform=${BUILDPLATFORM} node:22-trixie-slim AS superset-node-ci
 ARG BUILD_TRANSLATIONS
 ENV BUILD_TRANSLATIONS=${BUILD_TRANSLATIONS}
-ARG DEV_MODE="false"           # Skip frontend build in dev mode
+ARG DEV_MODE="false"
 ENV DEV_MODE=${DEV_MODE}
 
 COPY docker/ /app/docker/
-# Arguments for build configuration
 ARG NPM_BUILD_CMD="build"
 
-# Install system dependencies required for node-gyp
 RUN /app/docker/apt-install.sh build-essential python3 zstd
-
-# Define environment variables for frontend build
 ENV BUILD_CMD=${NPM_BUILD_CMD} \
     PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
-
-# Run the frontend memory monitoring script
 RUN /app/docker/frontend-mem-nag.sh
 
 WORKDIR /app/superset-frontend
 
-# Create necessary folders to avoid errors in subsequent steps
 RUN mkdir -p /app/superset/static/assets \
              /app/superset/translations
 
-# Mount package files and install dependencies if not in dev mode
-# NOTE: we mount packages and plugins as they are referenced in package.json as workspaces
-# ideally we'd COPY only their package.json. Here npm ci will be cached as long
-# as the full content of these folders don't change, yielding a decent cache reuse rate.
-# Note that it's not possible to selectively COPY or mount using blobs.
-RUN --mount=type=bind,source=./superset-frontend/package.json,target=./package.json \
-    --mount=type=bind,source=./superset-frontend/package-lock.json,target=./package-lock.json \
-    --mount=type=cache,target=/root/.cache \
+COPY superset-frontend/package.json /app/superset-frontend/package.json
+COPY superset-frontend/package-lock.json /app/superset-frontend/package-lock.json
+COPY superset-frontend /app/superset-frontend
+RUN --mount=type=cache,target=/root/.cache \
     --mount=type=cache,target=/root/.npm \
     if [ "${DEV_MODE}" = "false" ]; then \
-        npm ci; \
+        npm install; \
     else \
-        echo "Skipping 'npm ci' in dev mode"; \
+        echo "Skipping 'npm install' in dev mode"; \
     fi
 
-# Runs the webpack build process
-COPY superset-frontend /app/superset-frontend
+
+
 
 ######################################################################
 # superset-node is used for compiling frontend assets
 ######################################################################
 FROM superset-node-ci AS superset-node
+WORKDIR /app/superset-frontend
 
-# Build the frontend if not in dev mode
+# ЯВНО ставим недостающие плагины
+RUN npm install @superset-ui/legacy-plugin-chart-map-box @superset-ui/legacy-preset-chart-deckgl
+
 RUN --mount=type=cache,target=/root/.npm \
     if [ "${DEV_MODE}" = "false" ]; then \
         echo "Running 'npm run ${BUILD_CMD}'"; \
@@ -86,15 +78,6 @@ RUN --mount=type=cache,target=/root/.npm \
     else \
         echo "Skipping 'npm run ${BUILD_CMD}' in dev mode"; \
     fi;
-
-# Copy translation files
-COPY superset/translations /app/superset/translations
-
-# Build translations if enabled, then cleanup localization files
-RUN if [ "${BUILD_TRANSLATIONS}" = "true" ]; then \
-        npm run build-translation; \
-    fi; \
-    rm -rf /app/superset/translations/*/*/*.[po,mo];
 
 
 ######################################################################
@@ -130,7 +113,7 @@ ENV BUILD_TRANSLATIONS=${BUILD_TRANSLATIONS}
 # Install Python dependencies using docker/pip-install.sh
 COPY requirements/translations.txt requirements/
 RUN --mount=type=cache,target=/root/.cache/uv \
-    . /app/.venv/bin/activate && /app/docker/pip-install.sh --requires-build-essential -r requirements/translations.txt
+    . /app/venv/bin/activate && /app/docker/pip-install.sh --requires-build-essential -r requirements/translations.txt
 
 COPY superset/translations/ /app/translations_mo/
 RUN if [ "${BUILD_TRANSLATIONS}" = "true" ]; then \
