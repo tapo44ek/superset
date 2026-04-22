@@ -24,7 +24,7 @@ import {
   sanitizeHtml,
 } from '@superset-ui/core';
 import { GenericDataType } from '@apache-superset/core/common';
-import { DataColumnMeta } from '../types';
+import { DataColumnMeta, ExtendedTableColumnConfig } from '../types';
 import DateWithFormatter from './DateWithFormatter';
 
 /**
@@ -68,6 +68,15 @@ export function formatColumnValue(
   rowData?: Record<string, DataRecordValue>,
 ) {
   const { dataType, formatter, config = {}, currencyCodeColumn } = column;
+  const extendedConfig = config as ExtendedTableColumnConfig;
+  const shouldHideNulls = !!extendedConfig.hideNulls;
+  const isNullishTemporal =
+    value instanceof DateWithFormatter && value.input === null;
+
+  if (shouldHideNulls && (value == null || isNullishTemporal)) {
+    return [false, ''] as [boolean, string];
+  }
+
   const isNumber = dataType === GenericDataType.Numeric;
   const smallNumberFormatter =
     config.d3SmallNumberFormat === undefined

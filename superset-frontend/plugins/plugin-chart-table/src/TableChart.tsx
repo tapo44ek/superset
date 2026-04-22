@@ -85,6 +85,7 @@ import {
   SortByItem,
   TableChartTransformedProps,
   TableTextOverflowMode,
+  ExtendedTableColumnConfig,
 } from './types';
 import DataTable, {
   DataTableProps,
@@ -317,6 +318,46 @@ function getOverflowCellClassName(mode?: TableTextOverflowMode | null): string {
     return 'dt-clip-cell';
   }
   return 'dt-truncate-cell';
+}
+
+function getConditionalCellStyle({
+  value,
+  text,
+  config,
+  theme,
+}: {
+  value: DataRecordValue;
+  text: string;
+  config: ExtendedTableColumnConfig;
+  theme: SupersetTheme;
+}): CSSProperties {
+  const style: CSSProperties = {};
+  const label = config.conditionalFormattingLabel?.toLowerCase();
+
+  if (label === 'warning') {
+    style.backgroundColor = `${theme.colorWarning}22`;
+    style.color = theme.colorWarning;
+  } else if (label === 'error') {
+    style.backgroundColor = `${theme.colorError}22`;
+    style.color = theme.colorError;
+  } else if (label === 'success') {
+    style.backgroundColor = `${theme.colorSuccess}22`;
+    style.color = theme.colorSuccess;
+  }
+
+  if (typeof value === 'number') {
+    if (value < 0) {
+      style.color = theme.colorError;
+    } else if (value > 0 && !style.color) {
+      style.color = theme.colorSuccess;
+    }
+  }
+
+  if (text === '' && config.hideNulls) {
+    style.color = theme.colorTextDisabled;
+  }
+
+  return style;
 }
 
 export default function TableChart<D extends DataRecord = DataRecord>(
@@ -858,6 +899,7 @@ export default function TableChart<D extends DataRecord = DataRecord>(
         config = {},
         description,
       } = column;
+      const extendedConfig = config as ExtendedTableColumnConfig;
       const label = config.customColumnName || originalLabel;
       let displayLabel = label;
 
@@ -878,9 +920,12 @@ export default function TableChart<D extends DataRecord = DataRecord>(
         }
       }
 
-      const columnWidth = Number.isNaN(Number(config.columnWidth))
-        ? config.columnWidth
-        : Number(config.columnWidth);
+      const columnWidth =
+        typeof extendedConfig.width === 'number' && extendedConfig.width >= 0
+          ? extendedConfig.width
+          : Number.isNaN(Number(config.columnWidth))
+            ? config.columnWidth
+            : Number(config.columnWidth);
 
       // inline style for both th and td cell
       const sharedStyle: CSSProperties = getSharedStyle(column);
@@ -1092,6 +1137,13 @@ export default function TableChart<D extends DataRecord = DataRecord>(
             `;
           }
 
+          const conditionalCellStyle = getConditionalCellStyle({
+            value,
+            text,
+            config: extendedConfig,
+            theme,
+          });
+
           const cellProps = {
             'aria-labelledby': `header-${headerId}`,
             role: 'cell',
@@ -1130,6 +1182,14 @@ export default function TableChart<D extends DataRecord = DataRecord>(
             style: {
               ...(resolvedTextColor
                 ? ({ color: resolvedTextColor } as CSSProperties)
+                : {}),
+              ...conditionalCellStyle,
+              ...(columnWidth !== undefined && columnWidth !== null
+                ? {
+                    width: columnWidth,
+                    minWidth: columnWidth,
+                    maxWidth: columnWidth,
+                  }
                 : {}),
               verticalAlign: resolvedCellVerticalAlign,
               ...(cellFontSize ? { fontSize: `${cellFontSize}px` } : {}),
@@ -1197,6 +1257,13 @@ export default function TableChart<D extends DataRecord = DataRecord>(
             className={[className, col.isSorted ? 'is-sorted' : ''].join(' ')}
             style={{
               ...sharedStyle,
+              ...(columnWidth !== undefined && columnWidth !== null
+                ? {
+                    width: columnWidth,
+                    minWidth: columnWidth,
+                    maxWidth: columnWidth,
+                  }
+                : {}),
               ...style,
             }}
             onKeyDown={(e: ReactKeyboardEvent<HTMLElement>) => {

@@ -33,6 +33,7 @@ export type SharedColumnConfigProp =
   | 'alignPositiveNegative'
   | 'colorPositiveNegative'
   | 'columnWidth'
+  | 'width'
   | 'fractionDigits'
   | 'd3NumberFormat'
   | 'd3SmallNumberFormat'
@@ -43,6 +44,8 @@ export type SharedColumnConfigProp =
   | 'visible'
   | 'customColumnName'
   | 'displayTypeIcon'
+  | 'hideNulls'
+  | 'conditionalFormattingLabel'
   | 'currencyFormat';
 
 const d3NumberFormat: ControlFormItemSpec<'Select'> = {
@@ -90,6 +93,16 @@ const columnWidth: ControlFormItemSpec<'InputNumber'> = {
   description: t(
     "Default minimal column width in pixels, actual width may still be larger than this if other columns don't need much space",
   ),
+  width: 120,
+  placeholder: t('auto'),
+  debounceDelay: 400,
+  validators: [validateNumber],
+};
+
+const fixedWidth: ControlFormItemSpec<'InputNumber'> = {
+  controlType: 'InputNumber',
+  label: t('Fixed width'),
+  description: t('Force an exact column width in pixels'),
   width: 120,
   placeholder: t('auto'),
   debounceDelay: 400,
@@ -180,6 +193,27 @@ const visible: ControlFormItemSpec<'Checkbox'> = {
   defaultValue: true,
   debounceDelay: 200,
 };
+
+const hideNulls: ControlFormItemSpec<'Checkbox'> = {
+  controlType: 'Checkbox',
+  label: t('Hide null values'),
+  description: t('Render null and N/A values as empty cells'),
+  defaultValue: false,
+  debounceDelay: 200,
+};
+
+const conditionalFormattingLabel: ControlFormItemSpec<'Select'> = {
+  controlType: 'Select',
+  label: t('Conditional formatting'),
+  description: t('Apply a simple semantic style to the cell'),
+  options: [
+    { value: 'success', label: t('Success') },
+    { value: 'warning', label: t('Warning') },
+    { value: 'error', label: t('Error') },
+  ],
+  clearable: true,
+  debounceDelay: 200,
+};
 /**
  * All configurable column formatting properties.
  */
@@ -196,6 +230,7 @@ export const SHARED_COLUMN_CONFIG_PROPS = {
   d3TimeFormat,
   fractionDigits,
   columnWidth,
+  width: fixedWidth,
   customColumnName,
   displayTypeIcon,
   truncateLongCells,
@@ -203,6 +238,8 @@ export const SHARED_COLUMN_CONFIG_PROPS = {
   showCellBars,
   alignPositiveNegative,
   colorPositiveNegative,
+  hideNulls,
+  conditionalFormattingLabel,
   currencyFormat,
   visible,
 };
@@ -211,9 +248,12 @@ export const DEFAULT_CONFIG_FORM_LAYOUT: ColumnConfigFormLayout = {
   [GenericDataType.String]: [
     [
       'columnWidth',
+      'width',
       { name: 'horizontalAlign', override: { defaultValue: 'left' } },
     ],
     ['truncateLongCells'],
+    ['hideNulls'],
+    ['conditionalFormattingLabel'],
   ],
   [GenericDataType.Numeric]: [
     {
@@ -221,11 +261,14 @@ export const DEFAULT_CONFIG_FORM_LAYOUT: ColumnConfigFormLayout = {
       children: [
         [
           'columnWidth',
+          'width',
           { name: 'horizontalAlign', override: { defaultValue: 'right' } },
         ],
         ['showCellBars'],
         ['alignPositiveNegative'],
         ['colorPositiveNegative'],
+        ['hideNulls'],
+        ['conditionalFormattingLabel'],
       ],
     },
     {
@@ -240,14 +283,20 @@ export const DEFAULT_CONFIG_FORM_LAYOUT: ColumnConfigFormLayout = {
   [GenericDataType.Temporal]: [
     [
       'columnWidth',
+      'width',
       { name: 'horizontalAlign', override: { defaultValue: 'left' } },
     ],
     ['d3TimeFormat'],
+    ['hideNulls'],
+    ['conditionalFormattingLabel'],
   ],
   [GenericDataType.Boolean]: [
     [
       'columnWidth',
+      'width',
       { name: 'horizontalAlign', override: { defaultValue: 'left' } },
     ],
+    ['hideNulls'],
+    ['conditionalFormattingLabel'],
   ],
 };

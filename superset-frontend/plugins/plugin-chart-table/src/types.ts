@@ -49,6 +49,12 @@ export type { SearchOption, SortByItem } from '@superset-ui/chart-controls';
 
 export type TableTextOverflowMode = 'wrap' | 'truncate' | 'clip';
 
+export type ExtendedTableColumnConfig = TableColumnConfig & {
+  width?: number | null;
+  hideNulls?: boolean;
+  conditionalFormattingLabel?: string | null;
+};
+
 export interface TableChartData {
   records: DataRecord[];
   columns: string[];
@@ -70,7 +76,7 @@ export type TableChartFormData = QueryFormData & {
   show_cell_bars?: boolean;
   table_timestamp_format?: string;
   time_grain_sqla?: TimeGranularity;
-  column_config?: Record<string, TableColumnConfig>;
+  column_config?: Record<string, ExtendedTableColumnConfig>;
   allow_rearrange_columns?: boolean;
   header_font_size?: number | null;
   header_text_align?: 'left' | 'center' | 'right' | null;
