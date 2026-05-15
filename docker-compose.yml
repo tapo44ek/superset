@@ -40,7 +40,7 @@ x-common-build: &common-build
   cache_from:
     - apache/superset-cache:3.10-slim-trixie
   args:
-    DEV_MODE: "true"
+    DEV_MODE: "false"
     INCLUDE_CHROMIUM: ${INCLUDE_CHROMIUM:-false}
     INCLUDE_FIREFOX: ${INCLUDE_FIREFOX:-false}
     BUILD_TRANSLATIONS: ${BUILD_TRANSLATIONS:-false}
@@ -165,7 +165,7 @@ services:
         # This prevents building the frontend bundle since we'll mount local folder
         # and build it on startup while firing docker-frontend.sh in dev mode, where
         # it'll mount and watch local files and rebuild as you update them
-        DEV_MODE: "true"
+        DEV_MODE: "false"
         BUILD_TRANSLATIONS: ${BUILD_TRANSLATIONS:-false}
     environment:
       # set this to false if you have perf issues running the npm i; npm run dev in-docker
